@@ -1,0 +1,15 @@
+act
+  inst1, inst2, inst3, inst4, outst1, outst2,outst3,outst4, inend, outend, a1,a2,a3,a4,b1,b2,b3,b4,act1,act2,act3,act4,finished;
+proc
+  I = outst1.inend.inend.inend.inend.I;
+  P1 = inst1.outst2.a1.b1.outend.P1;
+  P2 = inst2.outst3.a2.b2.outend.P2; 
+  P3 = inst3.outst4.a3.b3.outend.P3;
+  P4 = inst4.a4.b4.outend.P4;
+init
+  allow(
+    {finished, act1, act2,act3,act4,a1,b1,a2,b2,a3,b3,a4,b4},
+    comm(
+      { inst1|outst1 -> act1, inst2|outst2 -> act2, inst3|outst3 -> act3 ,inst4|outst4 -> act4 ,inend|outend -> finished},
+      I || P1 || P2 || P3 || P4
+  ) ) ;

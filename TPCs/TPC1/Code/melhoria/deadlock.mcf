@@ -1,0 +1,4 @@
+% always, eventually a act1 is possible (true)
+
+[ true* ] < true > true
+

@@ -1,0 +1,3 @@
+% after four finished comes always a act1
+
+[ true* . finished . finished . finished . finished . !act1 ] false
