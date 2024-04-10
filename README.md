@@ -7,8 +7,8 @@ This repository, created by **Gabriel Costa**, contains reports, code, and resou
 The repository is organized into two main folders:
 
 * **TPCs (Homeworks):** This folder contains subfolders for each individual homework (TPC) assignment. Each TPC subfolder includes:
-    * **Assignment:** A file containing the specific problem statement and requirements for the TPC (e.g.,`.pdf`).
-    * **Report:** The report document (e.g., PDF, Word) outlining the analysis and solutions for the assignment.
+    * **Assignment:** A file containing the specific problem statement and requirements for the TPC (`.pdf`).
+    * **Report:** The report document (`.pdf`) outlining the analysis and solutions for the assignment.
     * **Code:** The source code files developed to complete the TPC.
 
 * **Group Assignments:** This folder contains subfolders for each group assignment (TPC) assignment, in a struture similar to the TPCs folder. 
