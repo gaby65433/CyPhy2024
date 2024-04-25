@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>
+const int N = 4;
+
+typedef int[0, N-1] id_CB;
+typedef int[0, N-1] id_CS;
+typedef int[0, N-1] id_C;
+
+int cWait;
+int lvl = N/2;
+int levelB, levelS;
+int changeCounter;
+int counter;
+
+chan arrivedB[N], arrivedS[N], waitB[N], waitS[N], change, reset;
+chan arrived[N], wait[N], left[N], changeController;
+urgent chan leave[N];
+urgent chan closeB, closeS;
+
+
+chan leaveB[N], leaveS[N];
+
+clock clkB, clkS, idlerB, idlerS, clkOpen;
+
+int[0, N] lenB, lenS;</declaration>
+	<template>
+		<name>Controller</name>
+		<declaration>clock clk;</declaration>
+		<location id="id0" x="-144" y="17">
+		</location>
+		<location id="id1" x="-144" y="101">
+			<label kind="invariant" x="-119" y="102">clk &lt;= 30</label>
+		</location>
+		<init ref="id1"/>
+		<transition id="id2">
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-169" y="170">reset?</label>
+			<label kind="assignment" x="-178" y="153">clk := 0</label>
+			<nail x="-170" y="144"/>
+			<nail x="-110" y="144"/>
+		</transition>
+		<transition id="id3">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-136" y="42">clk &gt;= 30</label>
+		</transition>
+		<transition id="id4">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-399" y="17">levelB &gt;= levelS &amp;&amp; 
+levelB &gt; 0</label>
+			<label kind="synchronisation" x="-399" y="60">closeS!</label>
+			<label kind="assignment" x="-399" y="85">clk := 0</label>
+			<nail x="-238" y="17"/>
+			<nail x="-238" y="102"/>
+		</transition>
+		<transition id="id5">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-25" y="17">levelS &gt;= levelB &amp;&amp; 
+levelS &gt; 0</label>
+			<label kind="synchronisation" x="-25" y="59">closeB!</label>
+			<label kind="assignment" x="-25" y="84">clk := 0</label>
+			<nail x="-42" y="17"/>
+			<nail x="-42" y="102"/>
+		</transition>
+	</template>
+	<template>
+		<name x="5" y="5">Major</name>
+		<parameter>clock &amp;clk, clock &amp;idler, chan &amp;left[N], urgent chan &amp;leave[N], chan &amp;arrived[N], chan &amp;wait[N], chan &amp;change, int[0, N] &amp;len_self, int[0, N] &amp;len_other, int &amp;level, int &amp;counter</parameter>
+		<declaration>id_C list[N+1]; 
+int[0, N] limbo;
+int basicLevel;
+
+id_C front(){
+    return list[0];
+}
+
+id_C tail(){
+    return list[len_self - 1];
+}
+
+void enqueue(id_C car){
+
+    list[len_self++] = car;
+
+    if (len_self == 0) level = 0;
+    else if (len_self*(1+0.1*counter) &lt; lvl) level = 1;
+    else level = 2;
+
+    if (len_self == 0) basicLevel = 0;
+    else if (len_self &lt; lvl) basicLevel = 1;
+    else level = 2;
+}
+
+void dequeue(){
+    
+    int idx = 0;
+
+    counter++;    
+    len_self--;
+    limbo = list[0];
+    
+    while (idx &lt; len_self){
+        list[idx] = list[++idx];
+    }
+    list[idx] = 0;
+
+    if (len_self == 0) level = 0;
+    else if (len_self &lt; lvl) level = 1;
+    else level = 2;
+
+    if (len_self == 0) basicLevel = 0;
+    else if (len_self &lt; lvl) basicLevel = 1;
+    else level = 2;
+
+}</declaration>
+		<location id="id6" x="-297" y="51">
+			<name x="-280" y="42">Greenify</name>
+			<committed/>
+		</location>
+		<location id="id7" x="-297" y="-17" color="#00ff00">
+			<name x="-356" y="-8">Green</name>
+			<label kind="invariant" x="-323" y="-93">clk &lt;= 30 || 
+levelB &gt;= levelS || 
+levelB == 0</label>
+		</location>
+		<location id="id8" x="-297" y="136" color="#ff0000">
+			<name x="-306" y="153">Red</name>
+		</location>
+		<location id="id9" x="-8" y="-17" color="#ffff00">
+			<name x="-25" y="-67">Yellow</name>
+			<label kind="invariant" x="-33" y="-50">clk &lt;= 5</label>
+		</location>
+		<location id="id10" x="-8" y="136" color="#ff0000">
+			<name x="-33" y="145">DualRed</name>
+			<label kind="invariant" x="-42" y="162">clk &lt;= 1</label>
+		</location>
+		<location id="id11" x="-551" y="-16">
+			<name x="-637" y="-25">Crossing</name>
+		</location>
+		<init ref="id7"/>
+		<transition id="id12">
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-280" y="-9">reset!</label>
+			<label kind="assignment" x="-280" y="8">clkOpen := 0</label>
+		</transition>
+		<transition id="id13">
+			<source ref="id8"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-289" y="68">change?</label>
+			<label kind="assignment" x="-289" y="85">clk := 0</label>
+		</transition>
+		<transition id="id14">
+			<source ref="id10"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-161" y="136">clk &gt;= 1</label>
+			<label kind="synchronisation" x="-161" y="153">change!</label>
+		</transition>
+		<transition id="id15">
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="guard" x="0" y="34">clk &gt;= 5</label>
+			<label kind="assignment" x="0" y="51">clk := 0</label>
+		</transition>
+		<transition id="id16">
+			<source ref="id11"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-501" y="-85">left[limbo]?</label>
+			<nail x="-457" y="-59"/>
+		</transition>
+		<transition id="id17">
+			<source ref="id7"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-144" y="-42">closeB?</label>
+			<label kind="assignment" x="-144" y="-85">clk := 0,
+counter := 0</label>
+		</transition>
+		<transition id="id18">
+			<source ref="id7"/>
+			<target ref="id11"/>
+			<label kind="select" x="-534" y="-16">e : id_C</label>
+			<label kind="guard" x="-535" y="0">len_self &gt; 0 &amp;&amp;
+e == front()</label>
+			<label kind="synchronisation" x="-535" y="34">leave[e]!</label>
+			<label kind="assignment" x="-535" y="51">dequeue()</label>
+		</transition>
+		<transition id="id19">
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="select" x="-425" y="144">e : id_C</label>
+			<label kind="synchronisation" x="-424" y="162">arrived[e]?</label>
+			<label kind="assignment" x="-424" y="179">enqueue(e)</label>
+			<nail x="-433" y="119"/>
+			<nail x="-433" y="144"/>
+		</transition>
+	</template>
+	<template>
+		<name>Minor</name>
+		<parameter>clock &amp;clk, clock &amp;idler, chan &amp;left[N], urgent chan &amp;leave[N], chan &amp;arrived[N], chan &amp;wait[N], chan &amp;change, int[0, N] &amp;len_self, int[0, N] &amp;len_other, int &amp;level, int &amp;counter</parameter>
+		<declaration>id_C list[N+1]; 
+int[0, N] limbo;
+int basicLevel;
+
+id_C front(){
+    return list[0];
+}
+
+id_C tail(){
+    return list[len_self - 1];
+}
+
+void enqueue(id_C car){
+
+    list[len_self++] = car;
+
+    if (len_self == 0) level = 0;
+    else if (len_self*(1+0.1*counter) &lt; lvl) level = 1;
+    else level = 2;
+
+    if (len_self == 0) basicLevel = 0;
+    else if (len_self &lt; lvl) basicLevel = 1;
+    else level = 2;
+}
+
+void dequeue(){
+    
+    int idx = 0;
+
+    counter++;    
+    len_self--;
+    limbo = list[0];
+    
+    while (idx &lt; len_self){
+        list[idx] = list[++idx];
+    }
+    list[idx] = 0;
+
+    if (len_self == 0) level = 0;
+    else if (len_self &lt; lvl) level = 1;
+    else level = 2;
+
+    if (len_self == 0) basicLevel = 0;
+    else if (len_self &lt; lvl) basicLevel = 1;
+    else level = 2;
+
+}</declaration>
+		<location id="id20" x="280" y="34">
+			<name x="297" y="25">Greenify</name>
+			<committed/>
+		</location>
+		<location id="id21" x="280" y="-34" color="#00ff00">
+			<name x="221" y="-25">Green</name>
+			<label kind="invariant" x="254" y="-110">clk &lt;= 30 || 
+levelS &gt;= levelB || 
+levelS == 0</label>
+		</location>
+		<location id="id22" x="280" y="119" color="#ff0000">
+			<name x="271" y="136">Red</name>
+		</location>
+		<location id="id23" x="569" y="-34" color="#ffff00">
+			<name x="552" y="-84">Yellow</name>
+			<label kind="invariant" x="544" y="-67">clk &lt;= 5</label>
+		</location>
+		<location id="id24" x="569" y="119" color="#ff0000">
+			<name x="544" y="128">DualRed</name>
+			<label kind="invariant" x="535" y="145">clk &lt;= 1</label>
+		</location>
+		<location id="id25" x="26" y="-33">
+			<name x="-59" y="-42">Crossing</name>
+		</location>
+		<init ref="id22"/>
+		<transition id="id26">
+			<source ref="id20"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="297" y="-26">reset!</label>
+			<label kind="assignment" x="297" y="-9">clkOpen := 0</label>
+		</transition>
+		<transition id="id27">
+			<source ref="id22"/>
+			<target ref="id20"/>
+			<label kind="synchronisation" x="288" y="51">change?</label>
+			<label kind="assignment" x="288" y="68">clk := 0</label>
+		</transition>
+		<transition id="id28">
+			<source ref="id24"/>
+			<target ref="id22"/>
+			<label kind="guard" x="416" y="119">clk &gt;= 1</label>
+			<label kind="synchronisation" x="416" y="136">change!</label>
+		</transition>
+		<transition id="id29">
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="guard" x="577" y="17">clk &gt;= 5</label>
+			<label kind="assignment" x="577" y="34">clk := 0</label>
+		</transition>
+		<transition id="id30">
+			<source ref="id25"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="76" y="-102">left[limbo]?</label>
+			<nail x="120" y="-76"/>
+		</transition>
+		<transition id="id31">
+			<source ref="id21"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="433" y="-59">closeS?</label>
+			<label kind="assignment" x="433" y="-102">clk := 0,
+counter := 0</label>
+		</transition>
+		<transition id="id32">
+			<source ref="id21"/>
+			<target ref="id25"/>
+			<label kind="select" x="43" y="-33">e : id_C</label>
+			<label kind="guard" x="42" y="-17">len_self &gt; 0 &amp;&amp;
+e == front()</label>
+			<label kind="synchronisation" x="42" y="17">leave[e]!</label>
+			<label kind="assignment" x="42" y="34">dequeue()</label>
+		</transition>
+		<transition id="id33">
+			<source ref="id22"/>
+			<target ref="id22"/>
+			<label kind="select" x="152" y="127">e : id_C</label>
+			<label kind="synchronisation" x="153" y="145">arrived[e]?</label>
+			<label kind="assignment" x="153" y="162">enqueue(e)</label>
+			<nail x="144" y="102"/>
+			<nail x="144" y="127"/>
+		</transition>
+	</template>
+	<template>
+		<name>Car</name>
+		<parameter>const id_C id</parameter>
+		<declaration>clock clk;</declaration>
+		<location id="id34" x="-637" y="-391">
+			<name x="-663" y="-374">Waiting</name>
+		</location>
+		<location id="id35" x="-739" y="-518">
+			<name x="-799" y="-535">Void</name>
+		</location>
+		<location id="id36" x="-552" y="-518" color="#ffa500">
+			<name x="-527" y="-544">Leaving</name>
+			<label kind="invariant" x="-527" y="-527">clk &lt;= 2</label>
+		</location>
+		<init ref="id35"/>
+		<transition id="id37">
+			<source ref="id35"/>
+			<target ref="id34"/>
+			<label kind="synchronisation" x="-807" y="-476">arrived[id]!</label>
+			<label kind="assignment" x="-765" y="-459">clk := 0</label>
+		</transition>
+		<transition id="id38">
+			<source ref="id36"/>
+			<target ref="id35"/>
+			<label kind="guard" x="-680" y="-518">clk &gt;= 2</label>
+			<label kind="synchronisation" x="-680" y="-544">left[id]!</label>
+		</transition>
+		<transition id="id39">
+			<source ref="id34"/>
+			<target ref="id36"/>
+			<label kind="synchronisation" x="-578" y="-476">leave[id]?</label>
+			<label kind="assignment" x="-586" y="-459">clk := 0</label>
+		</transition>
+	</template>
+	<system>
+major = Major(clkB, idlerB, left, leave, arrived, wait, change, lenB, lenS, levelB, counter);
+minor = Minor(clkS, idlerS, left, leave, arrived, wait, change, lenS, lenB, levelS, counter);
+
+system major, minor, Car, Controller;</system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; major.Red</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; minor.Green</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; major.Green and clkB &gt; 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; major.Green and clkB &gt; 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; levelB == 2 and levelS == 2</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; major.list[0] == N-1</formula>
+			<comment>There is some state where car N-1 is waiting in Major Road</comment>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; minor.list[0] == N-1</formula>
+			<comment>There is some state where car N-1 is waiting in Minor Road</comment>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; levelB == 2 and levelS == 2 and minor.basicLevel == 1 and minor.Green</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; levelB == 2 and levelS == 2 and major.basicLevel == 1 and major.Green</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:21 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] major.Yellow imply clkOpen &gt;= 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:22 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] minor.Yellow imply clkOpen &gt;= 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:22 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] not(major.Green and minor.Green)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:22 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] major.Yellow imply levelS &gt;= levelB</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:22 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] minor.Yellow imply levelB &gt;= levelS</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:23 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] forall (i:id_C) forall (j:id_C) Car(i).Leaving &amp;&amp; Car(j).Leaving imply i == j</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:23 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E[] levelS == 0 and major.Green</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:23 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E[] levelB == 0 and not(major.Greenify)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:23 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E[] levelS == 0 and levelB == 0 and major.Green and minor.Red</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:23 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>Car(0).Waiting --&gt; Car(0).Leaving</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:23 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>levelB == 2 --&gt; levelB == 0</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:24 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>major.Green and levelS &gt;= levelB and clkB &lt; 30 and levelS &gt; 0 --&gt; major.Yellow and clkOpen == 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:24 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>minor.Green and levelB &gt;= levelS and clkS &lt; 30 and levelB &gt; 0 --&gt; minor.Yellow and clkOpen == 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:25 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] not deadlock</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 22:32:25 +0100">
+			</result>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+	</queries>
+</nta>

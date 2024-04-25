@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>    
+    //Global declarations
+    chan change, start, stop, arrived, waiting;
+    clock major, minor, car_timer, openMajor, openMinor;
+    int car = 0;
+
+
+
+
+
+
+
+</declaration>
+	<template>
+		<name>Car</name>
+		<parameter>clock &amp;t</parameter>
+		<location id="id0" x="-238" y="-246">
+			<name x="-280" y="-254">Car</name>
+		</location>
+		<init ref="id0"/>
+		<transition id="id1">
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-238" y="-161">t &gt;= 1</label>
+			<label kind="synchronisation" x="-272" y="-136">arrived!</label>
+			<label kind="assignment" x="-289" y="-161">t = 0</label>
+			<nail x="-144" y="-136"/>
+			<nail x="-340" y="-136"/>
+		</transition>
+	</template>
+	<template>
+		<name>Sensor</name>
+		<location id="id2" x="-671" y="-858">
+			<name x="-714" y="-909">Waiting_Area</name>
+		</location>
+		<location id="id3" x="-280" y="-850">
+			<name x="-290" y="-884">Open</name>
+		</location>
+		<location id="id4" x="-416" y="-807">
+		</location>
+		<location id="id5" x="-552" y="-824">
+			<committed/>
+		</location>
+		<init ref="id4"/>
+		<transition id="id6">
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-646" y="-833">waiting!</label>
+		</transition>
+		<transition id="id7">
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-501" y="-841">arrived?</label>
+			<label kind="assignment" x="-501" y="-807">car++</label>
+		</transition>
+		<transition id="id8">
+			<source ref="id2"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-824" y="-892">arrived?</label>
+			<label kind="assignment" x="-824" y="-866">car++</label>
+			<nail x="-747" y="-909"/>
+			<nail x="-747" y="-790"/>
+		</transition>
+		<transition id="id9">
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-374" y="-833">start?</label>
+			<nail x="-323" y="-807"/>
+		</transition>
+		<transition id="id10">
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-416" y="-918">stop?</label>
+			<label kind="assignment" x="-425" y="-892">car = 0</label>
+			<nail x="-459" y="-892"/>
+			<nail x="-331" y="-892"/>
+		</transition>
+	</template>
+	<template>
+		<name>Minor_Light</name>
+		<parameter>clock &amp;t, clock &amp;open</parameter>
+		<location id="id11" x="-280" y="-654">
+			<committed/>
+		</location>
+		<location id="id12" x="0" y="-654">
+			<name x="-25" y="-629">Yellow</name>
+			<label kind="invariant" x="17" y="-663">t &lt;= 5</label>
+		</location>
+		<location id="id13" x="-280" y="-816">
+			<name x="-290" y="-850">Red</name>
+		</location>
+		<location id="id14" x="0" y="-816">
+			<name x="-10" y="-850">Green</name>
+			<label kind="invariant" x="17" y="-824">t &lt;= 30</label>
+		</location>
+		<location id="id15" x="-127" y="-816">
+			<committed/>
+		</location>
+		<location id="id16" x="-136" y="-654">
+			<name x="-146" y="-688">Red_</name>
+			<label kind="invariant" x="-161" y="-637">t &lt;= 1</label>
+		</location>
+		<init ref="id13"/>
+		<transition id="id17">
+			<source ref="id11"/>
+			<target ref="id13"/>
+			<label kind="synchronisation" x="-272" y="-739">start!</label>
+			<label kind="assignment" x="-357" y="-748">t = 0</label>
+		</transition>
+		<transition id="id18">
+			<source ref="id16"/>
+			<target ref="id11"/>
+			<label kind="guard" x="-229" y="-646">t == 1</label>
+			<label kind="synchronisation" x="-238" y="-680">change!</label>
+		</transition>
+		<transition id="id19">
+			<source ref="id12"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-85" y="-680">t == 5</label>
+			<label kind="assignment" x="-93" y="-646">t = 0</label>
+		</transition>
+		<transition id="id20">
+			<source ref="id14"/>
+			<target ref="id12"/>
+			<label kind="guard" x="8" y="-748">t &gt;= 30</label>
+			<label kind="assignment" x="-51" y="-748">t = 0</label>
+		</transition>
+		<transition id="id21">
+			<source ref="id15"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-93" y="-841">stop!</label>
+			<label kind="assignment" x="-102" y="-807">open = 0</label>
+		</transition>
+		<transition id="id22">
+			<source ref="id13"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-229" y="-841">change?</label>
+			<label kind="assignment" x="-220" y="-808">t = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name>Major_Light</name>
+		<parameter>clock &amp;t, clock &amp;open</parameter>
+		<location id="id23" x="-213" y="-128">
+			<name x="-221" y="-111">Red_</name>
+			<label kind="invariant" x="-187" y="-137">t &lt;= 1</label>
+		</location>
+		<location id="id24" x="-212" y="-306">
+			<name x="-222" y="-340">Yellow</name>
+			<label kind="invariant" x="-187" y="-314">t &lt;= 5</label>
+		</location>
+		<location id="id25" x="-374" y="-306">
+			<name x="-392" y="-349">Green_</name>
+			<label kind="invariant" x="-399" y="-289">t&lt;=30</label>
+		</location>
+		<location id="id26" x="-518" y="-306">
+			<name x="-552" y="-340">Green</name>
+		</location>
+		<location id="id27" x="-518" y="-128">
+			<name x="-535" y="-111">Red</name>
+		</location>
+		<init ref="id26"/>
+		<transition id="id28">
+			<source ref="id26"/>
+			<target ref="id24"/>
+			<label kind="guard" x="-365" y="-416">t &gt;= 30</label>
+			<label kind="synchronisation" x="-399" y="-442">waiting?</label>
+			<label kind="assignment" x="-425" y="-416">t = 0</label>
+			<nail x="-450" y="-417"/>
+			<nail x="-281" y="-417"/>
+		</transition>
+		<transition id="id29">
+			<source ref="id27"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-578" y="-230">change?</label>
+			<label kind="assignment" x="-501" y="-230">t = 0,
+open = 0</label>
+		</transition>
+		<transition id="id30">
+			<source ref="id23"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-374" y="-153">t &gt;= 1</label>
+			<label kind="synchronisation" x="-382" y="-119">change!</label>
+		</transition>
+		<transition id="id31">
+			<source ref="id24"/>
+			<target ref="id23"/>
+			<label kind="guard" x="-272" y="-230">t == 5</label>
+			<label kind="assignment" x="-204" y="-230">t = 0</label>
+		</transition>
+		<transition id="id32">
+			<source ref="id25"/>
+			<target ref="id24"/>
+			<label kind="guard" x="-323" y="-332">t &gt;= 30</label>
+			<label kind="assignment" x="-323" y="-298">t = 0</label>
+		</transition>
+		<transition id="id33">
+			<source ref="id26"/>
+			<target ref="id25"/>
+			<label kind="synchronisation" x="-476" y="-332">waiting?</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+Major = Major_Light(major,openMajor);
+Minor = Minor_Light(minor,openMinor);
+Carro = Car(car_timer);
+// List one or more processes to be composed into a system.
+system Carro, Sensor, Major, Minor;
+</system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt;Major.Red</formula>
+			<comment/>
+			<option key="--diagnostic" value="-1"/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+				<option key="--diagnostic" value="-1"/>
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt;Minor.Green</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; (Major.Green or Major.Green_) and major &gt; 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] not (Major.Green and Minor.Green)</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] Minor.Green imply minor &lt;= 30</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] Minor.Yellow imply openMinor &gt;= 30</formula>
+			<comment>Verify this condition</comment>
+			<result outcome="success" type="quality" timestamp="2024-04-18 20:31:33 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] Major.Yellow imply car &gt; 0</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E[] Major.Green imply car==0</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>car&gt;0 --&gt; Minor.Green</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>Minor.Green --&gt; Minor.Red</formula>
+			<comment>Se o semáforo da estrada secundária estiver a verde, eventualmente ficará vermelhor após estar </comment>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:30:36 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>(Major.Green or Major.Green_) and major &lt; 30 and car &gt;0 --&gt; Major.Yellow and openMajor == 30</formula>
+			<comment/>
+			<option key="--diagnostic" value="0"/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:47:21 +0100">
+				<option key="--diagnostic" value="0"/>
+			</result>
+		</query>
+		<query>
+			<formula>A[] not deadlock</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2024-04-18 19:39:09 +0100">
+			</result>
+		</query>
+	</queries>
+</nta>
