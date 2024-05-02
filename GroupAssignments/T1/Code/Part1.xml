@@ -108,7 +108,7 @@
 			<source ref="id11"/>
 			<target ref="id13"/>
 			<label kind="synchronisation" x="-272" y="-739">start!</label>
-			<label kind="assignment" x="-357" y="-748">t = 0</label>
+			<label kind="assignment" x="-340" y="-748">t = 0</label>
 		</transition>
 		<transition id="id18">
 			<source ref="id16"/>
